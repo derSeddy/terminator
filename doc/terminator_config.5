@@ -131,6 +131,11 @@ Controls how much to reduce the colour values of fonts in terminals that do not 
 factor. A font colour that was RGB(200,200,200) with an inactive_color_offset of 0.5 would set inactive terminals to
 RGB(100,100,100).
 .TP
+.B inactive_bgcolor_offset
+Controls how much to reduce the colour values of the background in terminals that do not have focus. It is a simple multiplication
+factor. A background colour that was RGB(200,200,200) with an inactive_bgcolor_offset of 0.5 would set inactive terminals to
+RGB(100,100,100).
+.TP
 .B always_split_with_profile
 Controls whether splits/tabs will continue to use the profile of their peer terminal. If set to False, they will always use
 the default profile.

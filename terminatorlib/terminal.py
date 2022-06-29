@@ -108,6 +108,7 @@ class Terminal(Gtk.VBox):
     fgcolor_active = None
     fgcolor_inactive = None
     bgcolor = None
+    bgcolor_inactive = None
     palette_active = None
     palette_inactive = None
 
@@ -725,6 +726,15 @@ class Terminal(Gtk.VBox):
         else:
             self.bgcolor.alpha = 1
 
+        factor_bg = max(0.0, min(1.0, self.config['inactive_bgcolor_offset']))
+        self.bgcolor_inactive = self.bgcolor.copy()
+        if self.config['background_type'] in ('transparent', 'image'):
+            self.bgcolor_inactive.alpha = self.bgcolor_inactive.alpha * factor_bg + 1.0 - factor_bg
+        else:
+            for bit in ['red', 'green', 'blue']:
+                setattr(self.bgcolor_inactive, bit,
+                        getattr(self.bgcolor_inactive, bit) * factor_bg)
+
         if self.config['background_type'] == 'image' and self.config['background_image'] != '':
             self.set_background_image(self.config['background_image'])
         else:
@@ -780,7 +790,7 @@ class Terminal(Gtk.VBox):
             self.vte.set_colors(self.fgcolor_active, self.bgcolor,
                                 self.palette_active)
         else:
-            self.vte.set_colors(self.fgcolor_inactive, self.bgcolor,
+            self.vte.set_colors(self.fgcolor_inactive, self.bgcolor_inactive,
                                 self.palette_inactive)
         profiles = self.config.base.profiles
         terminal_box_style_context = self.terminalbox.get_style_context()
@@ -1132,7 +1142,10 @@ class Terminal(Gtk.VBox):
         cr.get_source().set_filter(cairo.Filter.FAST)
         cr.paint()
         # draw transparent monochrome layer
-        Gdk.cairo_set_source_rgba(cr, self.bgcolor)
+        if self.terminator.last_focused_term == self:
+            Gdk.cairo_set_source_rgba(cr, self.bgcolor)
+        else:
+            Gdk.cairo_set_source_rgba(cr, self.bgcolor_inactive)
         cr.paint()
         # restore cairo context
         cr.restore()
@@ -1302,7 +1315,7 @@ class Terminal(Gtk.VBox):
 
     def on_vte_focus_out(self, _widget, _event):
         """Inform other parts of the application when focus is lost"""
-        self.vte.set_colors(self.fgcolor_inactive, self.bgcolor,
+        self.vte.set_colors(self.fgcolor_inactive, self.bgcolor_inactive,
                             self.palette_inactive)
         self.set_cursor_color()
         self.emit('focus-out')
