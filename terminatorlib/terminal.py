@@ -195,9 +195,12 @@ class Terminal(Gtk.VBox):
             self.vte.set_clear_background(False)
             self.vte.connect("draw", self.background_draw)
         except Exception as e:
-            self.background_image = None
-            self.vte.set_clear_background(True)
+            self.unset_background_image()
             err('error loading background image: %s, %s' % (type(e).__name__,e))
+
+    def unset_background_image(self):
+        self.background_image = None
+        self.vte.set_clear_background(True)
 
     def get_vte(self):
         """This simply returns the vte widget we are using"""
@@ -738,7 +741,7 @@ class Terminal(Gtk.VBox):
         if self.config['background_type'] == 'image' and self.config['background_image'] != '':
             self.set_background_image(self.config['background_image'])
         else:
-            self.background_image = None
+            self.unset_background_image()
 
         factor = self.config['inactive_color_offset']
         if factor > 1.0:
